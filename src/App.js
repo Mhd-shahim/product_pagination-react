@@ -15,11 +15,25 @@ function App() {
     );
     const data = await res.json();
     setProducts(data.results);
+    // setTotalCount(data.count);
+  };
+
+  const fetchProductCount = async (pageNumber = page, size = pageSize) => {
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/products/count/`
+    );
+    const data = await res.json();
     setTotalCount(data.count);
   };
 
+  const loadData = async (pageNumber = page, size = pageSize) => {
+    await fetchProductCount(pageNumber, size);
+    await fetchProducts(pageNumber, size);
+  };
+
   useEffect(() => {
-    fetchProducts();
+    setPageInput(page);
+    loadData();
   }, [page, pageSize]);
 
   const goToPage = () => {
@@ -31,7 +45,7 @@ function App() {
   return (
     <div style={{ padding: "20px" }}>
       <h2>Product List</h2>
-
+      <button onClick={() => loadData()}>Refresh</button>
       {/* Table */}
       <table border="1" cellPadding="8" width="100%">
         <thead>
@@ -68,7 +82,7 @@ function App() {
           First
         </button>
 
-        <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
           Previous
         </button>
 
@@ -84,15 +98,15 @@ function App() {
         <button onClick={goToPage}>Go</button>
 
         <button
-          onClick={() => setPage(page + 1)}
-          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+          disabled={page >= totalPages}
         >
           Next
         </button>
 
         <button
           onClick={() => setPage(totalPages)}
-          disabled={page === totalPages}
+          disabled={page >= totalPages}
         >
           Last
         </button>
